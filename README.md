@@ -16,12 +16,6 @@ To use it, just define a minutely task that calls scaltainer with proper configu
 
 Here are the steps required to achieve this:
 
-### Get the scheduler image
-
-The easiest way is to pull it directly from docker hub:
-
-    docker pull rayyanqcri/swarm-scheduler
-
 ### Deploy the cron stack
 
 First thing to do is to write a docker stack yaml file describing
@@ -57,7 +51,8 @@ Once ready, deploy your crontab file as a docker config:
 ### Deploy the scheduler
 
 With everything in place, it is time to deploy the scheduler itself
-and start the action:
+and start the action. A service definition can be found here in
+`scheduler-service.yml`:
 
     docker stack deploy -c scheduler-service.yml scheduler
 
