@@ -1,7 +1,7 @@
 version: '3.3'
 services:
   manager:
-    image: scheduler
+    image: rayyanqcri/swarm-scheduler
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
