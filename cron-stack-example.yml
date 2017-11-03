@@ -1,0 +1,11 @@
+version: '3.3'
+services:
+  service1:
+    image: busybox:latest
+    entrypoint: date
+    deploy:
+      replicas: 0
+      restart_policy:
+        condition: none
+
+# docker service create --name bbls --entrypoint ls --restart-condition none --replicas 0 busybox
