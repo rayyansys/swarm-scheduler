@@ -7,12 +7,13 @@ services:
     environment:
       - DOCKER_URL=unix:///var/run/docker.sock
     configs:
-      - crontab
+      - source: crontab.v1
+        target: crontab
     deploy:
       placement:
         constraints:
           - node.role == manager
 configs:
-  crontab:
+  crontab.v1:
     external: true
 

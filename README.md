@@ -16,7 +16,7 @@ To use it, just define a minutely task that calls scaltainer with proper configu
 
 Here are the steps required to achieve this:
 
-### Deploy the cron stack
+### 1. Deploy the cron stack
 
 First thing to do is to write a docker stack yaml file describing
 your cron tasks as explained in the introduction.
@@ -24,7 +24,7 @@ An example file is located here with the name `cron-services-example.yml`.
 You can include any configuration as long as you abide with the following
 restrictions:
 
-1. Set `entrypoint` to run the task command.
+1. Set `command` to run the task command.
 2. `replicas` should be set to 0, otherwise the task will run 
 as soon as the service is deployed for the number of times you specified.
 3. Set `restart_policy.condition` to `none`. If you set to `on-failure`,
@@ -35,7 +35,7 @@ Once ready, deploy your cron stack on the swarm cluster:
 
     docker stack deploy -c cron-stack-example.yml cron
 
-### Deploy the crontab schedule
+### 2. Deploy the crontab schedule
 
 A standard crontab file is used to schedule the tasks.
 The only requirement is to set the cron task command to launch the corresponding service.
@@ -46,13 +46,21 @@ and you want to run it once every minute, your crontab file should look like:
 
 Once ready, deploy your crontab file as a docker config:
 
-    docker config create crontab crontab-example
+    docker config create crontab.v1 crontab-example
 
-### Deploy the scheduler
+### 3. Deploy the scheduler
 
 With everything in place, it is time to deploy the scheduler itself
-and start the action. A service definition can be found here in
-`scheduler-service.yml`:
+and start the action:
+
+    docker service create --name scheduler_manager \
+        --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
+        --env DOCKER_URL=unix:///var/run/docker.sock \
+        --config crontab.v1 \
+        --constraint node.role==manager \
+        rayyanqcri/swarm-scheduler
+
+Alternatively, clone this repo then deploy the stack `scheduler-service.yml`:
 
     docker stack deploy -c scheduler-service.yml scheduler
 
@@ -67,17 +75,20 @@ example, and the service name is service1:
 ### Updating the crontab or the cron stack
 
 If you need to modify your cron tasks defined in the cron stack above,
-just remove the stack and add it again with the modified file:
+use `docker service update ...` to update the existing cron services and
+`docker service create ...` to add new cron services.
+
+Alternatively, just remove the cron stack and add it again with the modified file:
 
     docker stack rm cron
     docker stack deploy -c modified-cron-stack.yml cron
 
-If what you need is just to change the cron schedule, modify
-the docker config and deploy it again. Note that this will cause 
-any running task to restart automatically (TODO need to verify that).
+If what you need is just to change the cron schedule, create a newer version
+for the docker config. Note that this will cause any running tasks to restart automatically.
 
-    docker service update --config-rm crontab scheduler_manager && \
-    docker config rm crontab && \
-    docker config create crontab crontab-example && \
-    docker service update --config-add crontab scheduler_manager
-
+    docker config create crontab.v2 crontab-example-modified && \
+    docker service update \
+        --config-add source=crontab.v2,target=crontab \
+        --config-rm crontab.v1 \
+        scheduler_manager && \
+    docker config rm crontab.v1
