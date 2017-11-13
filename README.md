@@ -56,7 +56,7 @@ and start the action:
     docker service create --name scheduler_manager \
         --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
         --env DOCKER_URL=unix:///var/run/docker.sock \
-        --config crontab.v1 \
+        --config source=crontab.v1,target=/crontab \
         --constraint node.role==manager \
         rayyanqcri/swarm-scheduler
 
@@ -84,7 +84,7 @@ Alternatively, just remove the cron stack and add it again with the modified fil
     docker stack deploy -c modified-cron-stack.yml cron
 
 If what you need is just to change the cron schedule, create a newer version
-for the docker config. Note that this will cause any running tasks to restart automatically.
+for the docker config.
 
     docker config create crontab.v2 crontab-example-modified && \
     docker service update \
