@@ -11,9 +11,6 @@ according to the needs. Tasks also run inside any container image, let it
 be ruby, python, php, ...etc or even an application specific image.
 No new syntax to learn, just use the [docker compose](https://docs.docker.com/compose/compose-file) file syntax.
 
-Bonus: this scheduler comes with [scaltainer](https://github.com/hammady/scaltainer), an auto-scaler for docker swarm mode based on application metrics.
-To use it, just define a minutely task that calls scaltainer with proper configuration.
-
 Here are the steps required to achieve this:
 
 ### 1. Deploy the cron stack
